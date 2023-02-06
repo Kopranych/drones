@@ -38,9 +38,9 @@ public class DispatchController {
 
   }
 
-  @GetMapping("/drones/{id}")
+  @GetMapping("/drones")
   public List<DroneViewDto> get(
-      @PathVariable(name = "id", required = false) final String serialNumber,
+      @RequestParam(name = "id", required = false) final String serialNumber,
       @RequestParam(required = false) final DroneModel model,
       @RequestParam(required = false) final DroneState state,
       @RequestParam(required = false) final BigDecimal minBatteryLevel
