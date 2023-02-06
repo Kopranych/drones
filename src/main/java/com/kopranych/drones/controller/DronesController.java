@@ -1,8 +1,9 @@
 package com.kopranych.drones.controller;
 
-import com.kopranych.drones.model.DroneDto;
 import com.kopranych.drones.model.DroneModel;
 import com.kopranych.drones.model.DroneState;
+import com.kopranych.drones.model.dto.DroneDto;
+import java.util.Collections;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,10 +30,9 @@ public class DronesController {
   public List<DroneDto> get(
       @PathVariable(required = false) final String serialNumber,
       @RequestParam(required = false) final DroneModel model,
-      @RequestParam(required = false) final DroneState state,
-      @RequestParam(required = false) final Double batteryCapacity
+      @RequestParam(required = false) final DroneState state
   ) {
-
+    return Collections.emptyList();
   }
 
   @PutMapping
