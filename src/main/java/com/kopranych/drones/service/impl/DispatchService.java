@@ -9,8 +9,13 @@ import com.kopranych.drones.repository.DronesRepository;
 import com.kopranych.drones.service.CrudService;
 import com.kopranych.drones.service.validation.ValidationService;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import java.math.BigDecimal;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +25,8 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class DispatchService implements CrudService<Drone, String> {
+
+  private final EntityManager entityManager;
 
   private final List<ValidationService<Drone>> validationServices;
 
@@ -39,9 +46,30 @@ public class DispatchService implements CrudService<Drone, String> {
       @Nullable final String serialNumber,
       @Nullable final DroneModel model,
       @Nullable final DroneState state,
-      @Nullable final BigDecimal minBatteryLeve
+      @Nullable final BigDecimal minBatteryLevel
   ) {
-    return Collections.emptyList();
+    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Drone> criteriaQuery = criteriaBuilder.createQuery(Drone.class);
+
+    Root<Drone> drone = criteriaQuery.from(Drone.class);
+    List<Predicate> predicates = new ArrayList<>();
+
+    if (serialNumber != null) {
+      predicates.add(criteriaBuilder.equal(drone.get("serialNumber"), serialNumber));
+    }
+    if (model != null) {
+      predicates.add(criteriaBuilder.equal(drone.get("model"), model));
+    }
+    if (state != null) {
+      predicates.add(criteriaBuilder.equal(drone.get("state"), state));
+    }
+    if (minBatteryLevel != null) {
+      predicates.add(criteriaBuilder.greaterThan(drone.get("batteryCapacity"), minBatteryLevel));
+    }
+    if (!predicates.isEmpty()) {
+      criteriaQuery.where(predicates.toArray(new Predicate[0]));
+    }
+    return entityManager.createQuery(criteriaQuery).getResultList();
   }
 
   @Override
