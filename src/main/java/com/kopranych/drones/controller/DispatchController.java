@@ -1,13 +1,15 @@
 package com.kopranych.drones.controller;
 
+import com.kopranych.drones.mapper.DronesMapper;
 import com.kopranych.drones.model.DroneModel;
 import com.kopranych.drones.model.DroneState;
 import com.kopranych.drones.model.dto.DroneDto;
 import com.kopranych.drones.model.dto.DroneViewDto;
 import com.kopranych.drones.model.dto.MedicationDto;
+import com.kopranych.drones.service.impl.DispatchService;
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,21 +23,27 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/dispatch")
+@RequiredArgsConstructor
 public class DispatchController {
+
+  private final DispatchService dispatchService;
 
   @PostMapping("/drones")
   @ResponseStatus(HttpStatus.CREATED)
   public void saveDrone(@RequestBody DroneDto droneDto) {
-
+    dispatchService.save(DronesMapper.INSTANCE.map(droneDto));
   }
 
   @PutMapping("/drones/{id}/medications")
   @ResponseStatus(HttpStatus.CREATED)
-  public void loadMedication(
+  public DroneViewDto loadMedication(
       @PathVariable(name = "id") String serialNumber,
       @RequestBody MedicationDto medicationDto
   ) {
-
+    final var drone = dispatchService.loadMedication(
+        serialNumber, DronesMapper.INSTANCE.map(medicationDto)
+    );
+    return DronesMapper.INSTANCE.map(drone);
   }
 
   @GetMapping("/drones")
@@ -45,7 +53,8 @@ public class DispatchController {
       @RequestParam(required = false) final DroneState state,
       @RequestParam(required = false) final BigDecimal minBatteryLevel
   ) {
-    return Collections.emptyList();
+    return DronesMapper.INSTANCE.map(
+        dispatchService.get(serialNumber, model, state, minBatteryLevel));
   }
 
 }

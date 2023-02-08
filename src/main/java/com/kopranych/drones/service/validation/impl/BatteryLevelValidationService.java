@@ -18,7 +18,7 @@ public class BatteryLevelValidationService implements ValidationService<Drone> {
   public Drone validate(final Drone drone) {
 
     final var batteryCapacity = drone.getBatteryCapacity();
-    if (MIN_LEVEL.compareTo(batteryCapacity) >= 0) {
+    if (MIN_LEVEL.compareTo(batteryCapacity) <= 0) {
       return drone;
     }
     throw new HttpException(

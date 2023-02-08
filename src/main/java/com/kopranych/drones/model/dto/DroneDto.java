@@ -14,5 +14,4 @@ public class DroneDto {
   private BigDecimal batteryCapacity;
   private DroneState state;
 
-
 }
