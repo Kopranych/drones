@@ -87,6 +87,7 @@ public class DispatchService implements CrudService<Drone, String> {
           for (ValidationService<Drone> validationService : validationServices) {
             drone = validationService.validate(drone);
           }
+          drone.setState(DroneState.LOADED);
           return save(drone);
         })
         .orElseThrow(() -> new HttpException(

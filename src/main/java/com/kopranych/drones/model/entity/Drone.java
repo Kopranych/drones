@@ -27,7 +27,7 @@ public class Drone {
   private BigDecimal batteryCapacity;
   private DroneState state;
 
-  @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @OneToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "medication_id")
   private Medication medication;
 

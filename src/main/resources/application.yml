@@ -1,0 +1,13 @@
+spring:
+  liquibase:
+    enabled: true
+    drop-first: true
+    change-log: classpath:db/changelog/changelog-master.yml
+    default-schema: public
+
+jdbc:
+  driverClassName: org.h2.Driver
+  url: jdbc:h2:mem:myDb;DB_CLOSE_DELAY=-1;NON_KEYWORDS=KEY,VALUE
+hibernate:
+  dialect: org.hibernate.dialect.H2Dialect
+  hbm2ddl.auto: create
