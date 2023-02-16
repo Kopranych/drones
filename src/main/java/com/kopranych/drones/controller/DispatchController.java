@@ -7,6 +7,7 @@ import com.kopranych.drones.model.dto.DroneDto;
 import com.kopranych.drones.model.dto.DroneViewDto;
 import com.kopranych.drones.model.dto.MedicationDto;
 import com.kopranych.drones.service.impl.DispatchService;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class DispatchController {
 
   @PostMapping("/drones")
   @ResponseStatus(HttpStatus.CREATED)
-  public void saveDrone(@RequestBody DroneDto droneDto) {
+  public void saveDrone(@RequestBody @Valid DroneDto droneDto) {
     dispatchService.save(DronesMapper.INSTANCE.map(droneDto));
   }
 

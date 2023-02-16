@@ -135,7 +135,7 @@ class DispatchControllerTest {
         .post("/dispatch/drones")
         .then()
         .statusCode(400)
-        .body("message", equalTo("size must be between 0 and 100"));
+        .body("message", equalTo("serialNumber size must be between 0 and 100"));
   }
 
   private Drone getDrone(
