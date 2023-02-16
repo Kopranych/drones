@@ -118,19 +118,46 @@ class DispatchControllerTest {
         );
   }
 
+  @Test
+  void shouldResponseWithStatusCode400OnSaveDroneWithSerialNumberMoreThanMax() {
+
+    final var weightLimit = BigDecimal.valueOf(10);
+    final var batteryLevel = BigDecimal.valueOf(0.1);
+    final String longSerialNumber = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    final var drone = getDrone(longSerialNumber, DroneState.IDLE, weightLimit, batteryLevel);
+
+    Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
+
+    given()
+        .contentType(JSON)
+        .body(drone)
+        .when()
+        .post("/dispatch/drones")
+        .then()
+        .statusCode(400)
+        .body("message", equalTo("size must be between 0 and 100"));
+  }
+
   private Drone getDrone(
       final DroneState idle, final BigDecimal weightLimit, final BigDecimal batteryLevel
   ) {
+    return getDrone(SERIAL_NUMBER, idle, weightLimit, batteryLevel);
+  }
+
+  private Drone getDrone(final DroneState idle, final BigDecimal weightLimit) {
+    return getDrone(idle, weightLimit, BigDecimal.valueOf(0.5));
+  }
+
+  private Drone getDrone(
+      final String SerialNumber, final DroneState idle,
+      final BigDecimal weightLimit, final BigDecimal batteryLevel
+  ) {
     final var drone = new Drone();
-    drone.setSerialNumber(SERIAL_NUMBER);
+    drone.setSerialNumber(SerialNumber);
     drone.setState(idle);
     drone.setModel(DroneModel.Cruiserweight);
     drone.setWeightLimit(weightLimit);
     drone.setBatteryCapacity(batteryLevel);
     return drone;
-  }
-
-  private Drone getDrone(final DroneState idle, final BigDecimal weightLimit) {
-    return getDrone(idle, weightLimit, BigDecimal.valueOf(0.5));
   }
 }

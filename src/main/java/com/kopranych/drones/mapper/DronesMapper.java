@@ -7,7 +7,6 @@ import com.kopranych.drones.model.entity.Drone;
 import com.kopranych.drones.model.entity.Medication;
 import java.util.List;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 @Mapper
@@ -25,15 +24,15 @@ public interface DronesMapper {
 
   DroneDto mapToDto(Drone drone);
 
-  @Mapping(source = "name", target = "name")
-  @Mapping(source = "weight", target = "weight")
-  @Mapping(source = "code", target = "code")
-  @Mapping(source = "imageUrl", target = "imageUrl")
-  Medication map(MedicationDto medicationDto);
+//  @Mapping(source = "name", target = "name")
+//  @Mapping(source = "weight", target = "weight")
+//  @Mapping(source = "code", target = "code")
+//  @Mapping(source = "imageUrl", target = "imageUrl")
+Medication map(MedicationDto medicationDto);
 
-  @Mapping(source = "name", target = "name")
-  @Mapping(source = "weight", target = "weight")
-  @Mapping(source = "code", target = "code")
-  @Mapping(source = "imageUrl", target = "imageUrl")
+  //  @Mapping(source = "name", target = "name")
+//  @Mapping(source = "weight", target = "weight")
+//  @Mapping(source = "code", target = "code")
+//  @Mapping(source = "imageUrl", target = "imageUrl")
   MedicationDto map(Medication medication);
 }
