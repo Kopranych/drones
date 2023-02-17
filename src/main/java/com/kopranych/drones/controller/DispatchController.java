@@ -40,7 +40,7 @@ public class DispatchController {
   @ResponseStatus(HttpStatus.CREATED)
   public DroneViewDto loadMedication(
       @PathVariable String serialNumber,
-      @RequestBody MedicationDto medicationDto
+      @RequestBody @Valid MedicationDto medicationDto
   ) {
     final var drone = dispatchService.loadMedication(
         serialNumber, DronesMapper.INSTANCE.map(medicationDto)

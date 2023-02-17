@@ -14,8 +14,12 @@ import com.kopranych.drones.repository.DronesRepository;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -83,26 +87,6 @@ class DispatchControllerTest {
   }
 
   @Test
-  void shouldResponseWithStatusCode400OnSaveDroneWithSerialNumberMoreThanMax() {
-
-    final var weightLimit = BigDecimal.valueOf(10);
-    final var batteryLevel = BigDecimal.valueOf(0.1);
-    final String longSerialNumber = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    final var drone = getDrone(longSerialNumber, DroneState.IDLE, weightLimit, batteryLevel);
-
-    Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
-
-    given()
-        .contentType(JSON)
-        .body(drone)
-        .when()
-        .post("/dispatch/drones")
-        .then()
-        .statusCode(400)
-        .body("message", equalTo("serialNumber size must be between 0 and 100"));
-  }
-
-  @Test
   void shouldResponseWithStatusCode400OnLoadMedicationWhenBatteryLevelBelowThenMinLevel() {
 
     final var weightLimit = BigDecimal.valueOf(10);
@@ -121,6 +105,61 @@ class DispatchControllerTest {
         .formatted(batteryLevel, BigDecimal.valueOf(0.25), SERIAL_NUMBER);
 
     putRequestProcess(medication, expected);
+  }
+
+  private static Stream<Arguments> getMedicationAndExpectation() {
+
+    final var expectedName = "name must match to ^[a-zA-Z0-9-_]*$";
+
+    final var medicationName = "Medication@";
+    final var medicationWrongName = new MedicationDto();
+    medicationWrongName.setName(medicationName);
+
+    final var expectedCode = "code must match to ^[A-Z0-9_]*$";
+
+    final var code = "CODe";
+    final var medicationWrongCode = new MedicationDto();
+    medicationWrongCode.setCode(code);
+
+    return Stream.of(
+        Arguments.of(medicationWrongName, expectedName),
+        Arguments.of(medicationWrongCode, expectedCode)
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("getMedicationAndExpectation")
+  void shouldResponseWithStatusCode400OnLoadMedicationWithWrongFieldValues(
+      final MedicationDto input, String expected
+  ) {
+
+    final var weightLimit = BigDecimal.valueOf(10);
+    final var batteryLevel = BigDecimal.valueOf(0.1);
+    final var drone = getDrone(DroneState.IDLE, weightLimit, batteryLevel);
+
+    Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
+
+    putRequestProcess(input, expected);
+  }
+
+  @Test
+  void shouldResponseWithStatusCode400OnSaveDroneWithSerialNumberMoreThanMax() {
+
+    final var weightLimit = BigDecimal.valueOf(10);
+    final var batteryLevel = BigDecimal.valueOf(0.1);
+    final var longSerialNumber = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    final var drone = getDrone(longSerialNumber, DroneState.IDLE, weightLimit, batteryLevel);
+
+    Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
+
+    given()
+        .contentType(JSON)
+        .body(drone)
+        .when()
+        .post("/dispatch/drones")
+        .then()
+        .statusCode(400)
+        .body("message", equalTo("serialNumber size must be between 0 and 100"));
   }
 
   private Drone getDrone(
