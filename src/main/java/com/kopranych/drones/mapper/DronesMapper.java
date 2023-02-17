@@ -24,15 +24,7 @@ public interface DronesMapper {
 
   DroneDto mapToDto(Drone drone);
 
-//  @Mapping(source = "name", target = "name")
-//  @Mapping(source = "weight", target = "weight")
-//  @Mapping(source = "code", target = "code")
-//  @Mapping(source = "imageUrl", target = "imageUrl")
-Medication map(MedicationDto medicationDto);
+  Medication map(MedicationDto medicationDto);
 
-  //  @Mapping(source = "name", target = "name")
-//  @Mapping(source = "weight", target = "weight")
-//  @Mapping(source = "code", target = "code")
-//  @Mapping(source = "imageUrl", target = "imageUrl")
   MedicationDto map(Medication medication);
 }

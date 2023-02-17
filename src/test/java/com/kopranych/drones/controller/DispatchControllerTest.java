@@ -38,30 +38,35 @@ class DispatchControllerTest {
     RestAssuredMockMvc.standaloneSetup(dispatchController, exceptionControllerAdvice);
   }
 
-  @Test
-  void shouldResponseWithStatusCode400OnLoadMedicationWhenDroneStateIsNotIdle() {
-    final var drone = getDrone(DroneState.LOADED, BigDecimal.valueOf(10));
-    Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
-
+  private static void putRequestProcess(
+      final MedicationDto medicationDto, final String expected
+  ) {
     given()
         .contentType(JSON)
-        .body(new MedicationDto())
+        .body(medicationDto)
         .when()
         .put("/dispatch/drones/{serialNumber}/medications", SERIAL_NUMBER)
         .then()
         .statusCode(400)
-        .body(
-            "message",
-            equalTo(
-                "Drone %s must have IDLE status for loading medication".formatted(SERIAL_NUMBER))
-        );
+        .body("message", equalTo(expected));
+  }
+
+  @Test
+  void shouldResponseWithStatusCode400OnLoadMedicationWhenDroneStateIsNotIdle() {
+    final var drone = getDrone(DroneState.LOADED, BigDecimal.valueOf(10));
+    Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
+    final var medicationDto = new MedicationDto();
+
+    final var expected = "Drone %s must have IDLE status for loading medication"
+        .formatted(SERIAL_NUMBER);
+    putRequestProcess(medicationDto, expected);
   }
 
   @Test
   void shouldResponseWithStatusCode400OnLoadMedicationWhenMedicationWeightExceedWeightLimit() {
 
     final var weightLimit = BigDecimal.valueOf(10);
-    final Drone drone = getDrone(DroneState.IDLE, weightLimit);
+    final var drone = getDrone(DroneState.IDLE, weightLimit);
 
     final var medicationName = "Medication";
     final var medicationWeight = BigDecimal.valueOf(10.1);
@@ -71,51 +76,10 @@ class DispatchControllerTest {
 
     Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
 
-    given()
-        .contentType(JSON)
-        .body(medication)
-        .when()
-        .put("/dispatch/drones/{serialNumber}/medications", SERIAL_NUMBER)
-        .then()
-        .statusCode(400)
-        .body(
-            "message",
-            equalTo(
-                "Medication %s weight %s exceeds weight limit %s for drone %s"
-                    .formatted(medicationName, medicationWeight, weightLimit, SERIAL_NUMBER)
-            )
-        );
-  }
+    final var expected = "Medication %s weight %s exceeds weight limit %s for drone %s"
+        .formatted(medicationName, medicationWeight, weightLimit, SERIAL_NUMBER);
 
-  @Test
-  void shouldResponseWithStatusCode400OnLoadMedicationWhenBatteryLevelBelowThenMinLevel() {
-
-    final var weightLimit = BigDecimal.valueOf(10);
-    final var batteryLevel = BigDecimal.valueOf(0.1);
-    final var drone = getDrone(DroneState.IDLE, weightLimit, batteryLevel);
-
-    final var medicationName = "Medication";
-    final var medicationWeight = BigDecimal.valueOf(9.9);
-    final var medication = new MedicationDto();
-    medication.setName(medicationName);
-    medication.setWeight(medicationWeight);
-
-    Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
-
-    given()
-        .contentType(JSON)
-        .body(medication)
-        .when()
-        .put("/dispatch/drones/{serialNumber}/medications", SERIAL_NUMBER)
-        .then()
-        .statusCode(400)
-        .body(
-            "message",
-            equalTo(
-                "Battery level %s below than min level %s for drone %s"
-                    .formatted(batteryLevel, BigDecimal.valueOf(0.25), SERIAL_NUMBER)
-            )
-        );
+    putRequestProcess(medication, expected);
   }
 
   @Test
@@ -136,6 +100,27 @@ class DispatchControllerTest {
         .then()
         .statusCode(400)
         .body("message", equalTo("serialNumber size must be between 0 and 100"));
+  }
+
+  @Test
+  void shouldResponseWithStatusCode400OnLoadMedicationWhenBatteryLevelBelowThenMinLevel() {
+
+    final var weightLimit = BigDecimal.valueOf(10);
+    final var batteryLevel = BigDecimal.valueOf(0.1);
+    final var drone = getDrone(DroneState.IDLE, weightLimit, batteryLevel);
+
+    final var medicationName = "Medication";
+    final var medicationWeight = BigDecimal.valueOf(9.9);
+    final var medication = new MedicationDto();
+    medication.setName(medicationName);
+    medication.setWeight(medicationWeight);
+
+    Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
+
+    final var expected = "Battery level %s below than min level %s for drone %s"
+        .formatted(batteryLevel, BigDecimal.valueOf(0.25), SERIAL_NUMBER);
+
+    putRequestProcess(medication, expected);
   }
 
   private Drone getDrone(
