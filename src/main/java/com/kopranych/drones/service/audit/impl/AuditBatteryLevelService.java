@@ -12,6 +12,8 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -59,7 +61,7 @@ public class AuditBatteryLevelService implements AuditService<Drone, AuditBatter
     return dronesRepository.findAll().stream();
   }
 
-  public List<AuditBatteryLevel> getAll() {
-    return auditBatteryLevelRepository.findAll();
+  public Page<AuditBatteryLevel> getAll(final Pageable pageable) {
+    return auditBatteryLevelRepository.findAll(pageable);
   }
 }
