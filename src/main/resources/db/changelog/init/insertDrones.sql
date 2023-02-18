@@ -16,3 +16,5 @@ insert into drone (battery_capacity, model, state, weight_limit, serial_number)
 values (0.1, 1, 3, 100, '138');
 insert into drone (battery_capacity, model, state, weight_limit, serial_number)
 values (0.4, 3, 0, 100, '139');
+insert into drone (battery_capacity, model, state, weight_limit, serial_number)
+values (0.4, 3, 0, 100, '140');

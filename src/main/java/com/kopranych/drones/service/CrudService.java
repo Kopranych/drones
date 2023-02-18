@@ -2,11 +2,11 @@ package com.kopranych.drones.service;
 
 import java.util.Optional;
 
-public interface CrudService<T, ID> {
+public interface CrudService<T, I> {
 
   T save(T object);
 
-  Optional<T> get(ID id);
+  Optional<T> get(I id);
 
-  void delete(ID id);
+  void delete(I id);
 }
