@@ -55,15 +55,48 @@ class DispatchControllerTest {
         .body("message", equalTo(expected));
   }
 
-  @Test
-  void shouldResponseWithStatusCode400OnLoadMedicationWhenDroneStateIsNotIdle() {
-    final var drone = getDrone(DroneState.LOADED, BigDecimal.valueOf(10));
-    Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
-    final var medicationDto = new MedicationDto();
+  private static Stream<Arguments> getMedicationsAndExpectations() {
 
-    final var expected = "Drone %s must have IDLE status for loading medication"
-        .formatted(SERIAL_NUMBER);
-    putRequestProcess(medicationDto, expected);
+    final var expectedName = "name must match to ^[a-zA-Z0-9-_]*$";
+
+    final var medicationName = "Medication@";
+    final var medicationWrongName = new MedicationDto();
+    medicationWrongName.setName(medicationName);
+
+    final var expectedCode = "code must match to ^[A-Z0-9_]*$";
+
+    final var code = "CODe";
+    final var medicationWrongCode = new MedicationDto();
+    medicationWrongCode.setCode(code);
+
+    return Stream.of(
+        Arguments.of(medicationWrongName, expectedName),
+        Arguments.of(medicationWrongCode, expectedCode)
+    );
+  }
+
+  @Test
+  void shouldResponseWithStatusCode201OnLoadMedicationSuccessfully() {
+    final var weightLimit = BigDecimal.valueOf(10);
+    final var batteryLevel = BigDecimal.valueOf(0.3);
+    final var drone = getDrone(DroneState.IDLE, weightLimit, batteryLevel);
+
+    final var medicationName = "Medication";
+    final var medicationWeight = BigDecimal.valueOf(9.9);
+    final var medication = new MedicationDto();
+    medication.setName(medicationName);
+    medication.setWeight(medicationWeight);
+
+    Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
+    Mockito.when(dronesRepository.save(drone)).thenReturn(drone);
+
+    given()
+        .contentType(JSON)
+        .body(medication)
+        .when()
+        .put("/dispatch/drones/{serialNumber}/medications", SERIAL_NUMBER)
+        .then()
+        .statusCode(201);
   }
 
   @Test
@@ -107,39 +140,16 @@ class DispatchControllerTest {
     putRequestProcess(medication, expected);
   }
 
-  private static Stream<Arguments> getMedicationAndExpectation() {
-
-    final var expectedName = "name must match to ^[a-zA-Z0-9-_]*$";
-
-    final var medicationName = "Medication@";
-    final var medicationWrongName = new MedicationDto();
-    medicationWrongName.setName(medicationName);
-
-    final var expectedCode = "code must match to ^[A-Z0-9_]*$";
-
-    final var code = "CODe";
-    final var medicationWrongCode = new MedicationDto();
-    medicationWrongCode.setCode(code);
-
-    return Stream.of(
-        Arguments.of(medicationWrongName, expectedName),
-        Arguments.of(medicationWrongCode, expectedCode)
-    );
-  }
-
-  @ParameterizedTest
-  @MethodSource("getMedicationAndExpectation")
-  void shouldResponseWithStatusCode400OnLoadMedicationWithWrongFieldValues(
-      final MedicationDto input, String expected
-  ) {
-
-    final var weightLimit = BigDecimal.valueOf(10);
-    final var batteryLevel = BigDecimal.valueOf(0.1);
-    final var drone = getDrone(DroneState.IDLE, weightLimit, batteryLevel);
+  @Test
+  void shouldResponseWithStatusCode400OnLoadMedicationWhenDroneStateIsNotIdle() {
+    final var drone = getDrone(DroneState.LOADED, BigDecimal.valueOf(10));
+    final var medicationDto = new MedicationDto();
 
     Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
 
-    putRequestProcess(input, expected);
+    final var expected = "Drone %s must have IDLE status for loading medication"
+        .formatted(SERIAL_NUMBER);
+    putRequestProcess(medicationDto, expected);
   }
 
   @Test
@@ -162,23 +172,38 @@ class DispatchControllerTest {
         .body("message", equalTo("serialNumber size must be between 0 and 100"));
   }
 
-  private Drone getDrone(
-      final DroneState idle, final BigDecimal weightLimit, final BigDecimal batteryLevel
+  @ParameterizedTest
+  @MethodSource("getMedicationsAndExpectations")
+  void shouldResponseWithStatusCode400OnLoadMedicationWithWrongFieldValues(
+      final MedicationDto input, String expected
   ) {
-    return getDrone(SERIAL_NUMBER, idle, weightLimit, batteryLevel);
-  }
 
-  private Drone getDrone(final DroneState idle, final BigDecimal weightLimit) {
-    return getDrone(idle, weightLimit, BigDecimal.valueOf(0.5));
+    final var weightLimit = BigDecimal.valueOf(10);
+    final var batteryLevel = BigDecimal.valueOf(0.1);
+    final var drone = getDrone(DroneState.IDLE, weightLimit, batteryLevel);
+
+    Mockito.when(dronesRepository.findById(SERIAL_NUMBER)).thenReturn(Optional.of(drone));
+
+    putRequestProcess(input, expected);
   }
 
   private Drone getDrone(
-      final String SerialNumber, final DroneState idle,
+      final DroneState state, final BigDecimal weightLimit, final BigDecimal batteryLevel
+  ) {
+    return getDrone(SERIAL_NUMBER, state, weightLimit, batteryLevel);
+  }
+
+  private Drone getDrone(final DroneState state, final BigDecimal weightLimit) {
+    return getDrone(state, weightLimit, BigDecimal.valueOf(0.5));
+  }
+
+  private Drone getDrone(
+      final String SerialNumber, final DroneState state,
       final BigDecimal weightLimit, final BigDecimal batteryLevel
   ) {
     final var drone = new Drone();
     drone.setSerialNumber(SerialNumber);
-    drone.setState(idle);
+    drone.setState(state);
     drone.setModel(DroneModel.Cruiserweight);
     drone.setWeightLimit(weightLimit);
     drone.setBatteryCapacity(batteryLevel);
