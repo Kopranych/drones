@@ -12,10 +12,10 @@ public interface AuditService<T, R> {
           .map(this::auditEntity)
           .toList();
       saveResults(results);
+      successFinishAuditLog();
     } catch (Exception e) {
       errorFinishAuditLog(e);
     }
-    successFinishAuditLog();
   }
 
   void successFinishAuditLog();

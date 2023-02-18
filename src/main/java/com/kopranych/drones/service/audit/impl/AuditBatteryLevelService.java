@@ -2,6 +2,7 @@ package com.kopranych.drones.service.audit.impl;
 
 import com.kopranych.drones.model.entity.AuditBatteryLevel;
 import com.kopranych.drones.model.entity.Drone;
+import com.kopranych.drones.model.event.AuditBatteryLevelEvent;
 import com.kopranych.drones.repository.AuditBatteryLevelRepository;
 import com.kopranych.drones.repository.DronesRepository;
 import com.kopranych.drones.service.audit.AuditService;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -19,6 +21,11 @@ public class AuditBatteryLevelService implements AuditService<Drone, AuditBatter
 
   private final DronesRepository dronesRepository;
   private final AuditBatteryLevelRepository auditBatteryLevelRepository;
+
+  @EventListener(AuditBatteryLevelEvent.class)
+  public void auditEventListener() {
+    audit();
+  }
 
   @Override
   public void successFinishAuditLog() {
@@ -49,6 +56,10 @@ public class AuditBatteryLevelService implements AuditService<Drone, AuditBatter
 
   @Override
   public Stream<Drone> getEntities() {
-    return dronesRepository.streamAll();
+    return dronesRepository.findAll().stream();
+  }
+
+  public List<AuditBatteryLevel> getAll() {
+    return auditBatteryLevelRepository.findAll();
   }
 }

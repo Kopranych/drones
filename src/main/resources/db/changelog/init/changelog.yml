@@ -4,4 +4,6 @@ databaseChangeLog:
   - include:
       file: db/changelog/init/createMedicationTable.sql
   - include:
+      file: db/changelog/init/createAuditBatteryLevelTable.sql
+  - include:
       file: db/changelog/init/insertDrones.sql
