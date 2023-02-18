@@ -26,7 +26,7 @@ public interface AuditService<T, R> {
 
   void saveResults(List<R> results);
 
-  R auditEntity(T list);
+  R auditEntity(T entity);
 
   Stream<T> getEntities();
 
